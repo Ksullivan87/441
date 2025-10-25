@@ -1,0 +1,120 @@
+BugTracker Router System Explanation
+============================
+
+The Router is a crucial component of the Bug Tracker application that handles URL routing, permission checking, and request handling. Here's how it works:
+
+1. Router Initialization
+---------------------
+- The router is initialized with a controller instance
+- Routes are defined in initializeRoutes() method
+- Each route has:
+  * HTTP method (GET/POST)
+  * Permission requirements (null or specific permission)
+  * Associated handler method
+
+2. Route Definition Structure
+--------------------------
+Example route:
+'create_user' => [
+    'method' => 'POST',
+    'permission' => 'create_user'
+]
+
+This defines:
+- URL endpoint: create_user
+- Accepts only POST requests
+- Requires 'create_user' permission
+
+3. Request Flow
+-------------
+1. User makes request (e.g., ?action=create_bug)
+2. Router logs access attempt
+3. Router matches action to handler method
+4. Permission is checked if required
+5. Handler method processes request
+6. Response is returned with view and data
+
+4. Permission System
+-----------------
+Three levels of checking:
+a) Route Level:
+   - Defined in route configuration
+   - null = no permission needed
+   - String value = specific permission required
+
+b) Controller Level:
+   - hasPermission() method checks user roles
+   - Different permissions for Admin/Manager/User
+   - Role-based access control
+
+c) Resource Level:
+   - Additional checks in specific handlers
+   - Project-specific permissions
+   - Bug ownership permissions
+
+5. Handler Methods
+---------------
+Each route has a corresponding handler method that:
+1. Extracts parameters from request
+2. Calls appropriate controller method
+3. Processes the result
+4. Returns view data or redirects
+
+6. Response Structure
+------------------
+Handlers return arrays with:
+{
+    'view': 'view_name',
+    'data': [/* view data */]
+}
+
+7. URL Handling
+-------------
+- parseUrl() breaks down incoming URLs
+- buildUrl() creates internal URLs
+- redirect() handles redirections
+
+8. Security Features
+-----------------
+- HTTP method enforcement
+- Permission checking
+- Input sanitization
+- Session validation
+- Activity logging
+
+9. Error Handling
+---------------
+- Invalid routes go to unauthorized view
+- Failed permissions redirect to error page
+- All actions are logged
+
+10. Special Routes
+---------------
+Some routes have special handling:
+- Login (no auth required)
+- Logout (session cleanup)
+- Dashboard (default landing)
+- Admin (extra permission checks)
+
+Example Flow:
+============
+When user visits ?action=create_bug:
+
+1. Router receives request
+2. Logs access attempt
+3. Matches 'create_bug' route
+4. Verifies POST method
+5. Checks permissions (if any)
+6. Calls handleCreateBug()
+7. Processes bug creation
+8. Returns success/error response
+9. Renders appropriate view
+
+This routing system provides:
+- Clean URL structure
+- Centralized access control
+- Consistent error handling
+- Secure request processing
+- Maintainable codebase
+
+The router serves as the entry point for all requests, ensuring proper handling, security, and user experience throughout the application.

@@ -11,7 +11,8 @@ class Bugs {
         // Validate required fields
         $validation = $this->validateBugData($bugData, false);
         if (!$validation['valid']) {
-            throw new Exception("Invalid bug data: " . implode(', ', $validation['errors']));
+            //process the validation errors to send to client side with 422 Unprocessable Entity status
+            throw new Exception("Invalid bug data: " . implode(', ', $validation['errors']), 422);
         }
         
         $query = "INSERT INTO bugs (summary, description, ownerId, projectId, 
@@ -96,7 +97,7 @@ class Bugs {
     
     public function getBugsByProject($projectId, $userId) {
         if (!$this->canUserViewProjectBugs($userId, $projectId)) {
-            throw new Exception("Insufficient permissions to view project bugs");
+            throw new Exception("Insufficient permissions to view project bugs", 401); //needle... in a haystack
         }
         
         $query = "SELECT b.*, s.Status as statusName, pr.Priority as priorityName,
@@ -115,7 +116,7 @@ class Bugs {
     
     public function getOpenBugsByProject($projectId, $userId) {
         if (!$this->canUserViewProjectBugs($userId, $projectId)) {
-            throw new Exception("Insufficient permissions to view project bugs");
+            throw new Exception("Insufficient permissions to view project bugs", 401);
         }
         
         $query = "SELECT b.*, s.Status as statusName, pr.Priority as priorityName,
@@ -134,7 +135,7 @@ class Bugs {
     
     public function getOverdueBugsByProject($projectId, $userId) {
         if (!$this->canUserViewProjectBugs($userId, $projectId)) {
-            throw new Exception("Insufficient permissions to view project bugs");
+            throw new Exception("Insufficient permissions to view project bugs", 401);
         }
         
         $query = "SELECT b.*, s.Status as statusName, pr.Priority as priorityName,
@@ -168,8 +169,8 @@ class Bugs {
     public function getUnassignedBugs($userId) {
         // Only managers and admins can view unassigned bugs
         $userRole = $this->getUserRole($userId);
-        if (!in_array($userRole, ['Admin', 'Manager'])) {
-            throw new Exception("Insufficient permissions to view unassigned bugs");
+        if (!in_array($userRole, ['Admin', 'Manager'])) { 
+            throw new Exception("Insufficient permissions to view unassigned bugs", 401);
         }
         
         $query = "SELECT b.*, p.Project as projectName, s.Status as statusName, pr.Priority as priorityName,
@@ -188,7 +189,7 @@ class Bugs {
     public function getAllBugs($userId) {
         $userRole = $this->getUserRole($userId);
         if (!in_array($userRole, ['Admin', 'Manager'])) {
-            throw new Exception("Insufficient permissions to view all bugs");
+            throw new Exception("Insufficient permissions to view all bugs", 401);
         }
         
         $query = "SELECT b.*, p.Project as projectName, s.Status as statusName, pr.Priority as priorityName,
@@ -208,7 +209,7 @@ class Bugs {
     public function getAllOpenBugs($userId) {
         $userRole = $this->getUserRole($userId);
         if (!in_array($userRole, ['Admin', 'Manager'])) {
-            throw new Exception("Insufficient permissions to view all bugs");
+            throw new Exception("Insufficient permissions to view all bugs", 401);
         }
         
         $query = "SELECT b.*, p.Project as projectName, s.Status as statusName, pr.Priority as priorityName,
@@ -228,7 +229,7 @@ class Bugs {
     
     public function assignBug($bugId, $userId) {
         if (!$this->canUserUpdateBug($userId, $bugId)) {
-            throw new Exception("Insufficient permissions to assign bug");
+            throw new Exception("Insufficient permissions to assign bug", 401);
         }
         
         $query = "UPDATE bugs SET assignedToId = ? WHERE id = ?";
@@ -269,12 +270,10 @@ class Bugs {
     public function canUserViewProjectBugs($userId, $projectId) {
         $userRole = $this->getUserRole($userId);
         
-        // Admins and managers can view all project bugs
         if (in_array($userRole, ['Admin', 'Manager'])) {
             return true;
         }
         
-        // Regular users can only view bugs from their assigned project
         $userProject = $this->getUserProject($userId);
         return $userProject && $userProject['projectId'] == $projectId;
     }
@@ -282,12 +281,10 @@ class Bugs {
     public function canUserUpdateBug($userId, $bugId) {
         $userRole = $this->getUserRole($userId);
         
-        // Admins and managers can update all bugs
         if (in_array($userRole, ['Admin', 'Manager'])) {
             return true;
         }
         
-        // Regular users can only update bugs assigned to them
         $bug = $this->getBugById($bugId);
         return $bug && $bug['assignedToId'] == $userId;
     }
@@ -323,7 +320,8 @@ class Bugs {
     }
     
     private function validateBugData($bugData, $isUpdate) {
-        $errors = [];
+        //Validation for all bug fields on submit 
+        $errors = []; // return this array for client side feedback
         
         if (!$isUpdate || isset($bugData['summary'])) {
             if (empty($bugData['summary']) || strlen($bugData['summary']) < 3) {

@@ -26,7 +26,7 @@ class BugTrackerController {
             
             // Validate input
             if (empty($username) || empty($password)) {
-                throw new Exception("Username and password are required");
+                throw new Exception("Username and password are required", 400);
             }
             
             $user = $this->model->loginUser($username, $password);
@@ -66,7 +66,7 @@ class BugTrackerController {
     
     public function handleDashboard() {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         return $this->model->getUserDashboard($this->currentUser['userId']);
@@ -74,11 +74,10 @@ class BugTrackerController {
     
     public function handleCreateBug($bugData) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
-            // Sanitize and validate input
             $bugData = $this->sanitizeBugData($bugData);
             $this->validateBugData($bugData);
             
@@ -106,11 +105,10 @@ class BugTrackerController {
     
     public function handleUpdateBug($bugId, $bugData) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
-            // Sanitize and validate input
             $bugData = $this->sanitizeBugData($bugData);
             $this->validateBugData($bugData);
             
@@ -137,7 +135,7 @@ class BugTrackerController {
     
     public function handleDeleteBug($bugId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -188,7 +186,7 @@ class BugTrackerController {
     
     public function handleBugDetails($bugId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -215,7 +213,7 @@ class BugTrackerController {
     
     public function handleAssignBug($bugId, $userId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -242,7 +240,7 @@ class BugTrackerController {
     
     public function handleUpdateBugStatus($bugId, $statusId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -270,7 +268,7 @@ class BugTrackerController {
     
     public function handleCloseBug($bugId, $fixDescription) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -297,7 +295,7 @@ class BugTrackerController {
     
     public function handleCreateUser($userData) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('create_user')) {
@@ -305,7 +303,6 @@ class BugTrackerController {
         }
         
         try {
-            // Sanitize and validate input
             $userData = $this->sanitizeUserData($userData);
             $this->validateUserData($userData);
             
@@ -333,11 +330,10 @@ class BugTrackerController {
     
     public function handleUpdateUser($userId, $userData) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
-            // Sanitize and validate input
             $userData = $this->sanitizeUserData($userData);
             $this->validateUserData($userData);
             
@@ -364,7 +360,7 @@ class BugTrackerController {
 
     public function handleDeleteUser($userId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('delete_user')) {
@@ -395,7 +391,7 @@ class BugTrackerController {
     
     public function handleUserList() {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('view_all_users')) {
@@ -418,7 +414,7 @@ class BugTrackerController {
     
     public function handleUserDetails($userId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -445,7 +441,7 @@ class BugTrackerController {
     
     public function handleCreateProject($projectData) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('create_project')) {
@@ -453,7 +449,6 @@ class BugTrackerController {
         }
         
         try {
-            // Sanitize and validate input
             $projectData = $this->sanitizeProjectData($projectData);
             $this->validateProjectData($projectData);
             
@@ -481,7 +476,7 @@ class BugTrackerController {
     
     public function handleUpdateProject($projectId, $projectData) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('update_project')) {
@@ -489,7 +484,6 @@ class BugTrackerController {
         }
         
         try {
-            // Sanitize and validate input
             $projectData = $this->sanitizeProjectData($projectData);
             $this->validateProjectData($projectData);
             
@@ -516,7 +510,7 @@ class BugTrackerController {
     
     public function handleProjectList() {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -535,7 +529,7 @@ class BugTrackerController {
     
     public function handleProjectDetails($projectId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -562,7 +556,7 @@ class BugTrackerController {
     
     public function handleAssignUserToProject($userId, $projectId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('assign_user_to_project')) {
@@ -593,7 +587,7 @@ class BugTrackerController {
     
     public function handleRemoveUserFromProject($userId, $projectId) {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('remove_user_from_project')) {
@@ -624,7 +618,7 @@ class BugTrackerController {
     
     public function handleSystemStatistics() {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         if (!$this->hasPermission('view_system_statistics')) {
@@ -647,7 +641,7 @@ class BugTrackerController {
     
     public function handleActivityLog() {
         if (!$this->validateSession()) {
-            throw new Exception("Session validation failed");
+            throw new Exception("Session validation failed", 401);
         }
         
         try {
@@ -697,7 +691,7 @@ class BugTrackerController {
         }
     }
     
-    // Input sanitization methods
+    //sanitization and validation 
     private function sanitizeInput($input) {
         return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
     }
@@ -738,7 +732,6 @@ class BugTrackerController {
         return $sanitized;
     }
     
-    // Input validation methods
     private function validateBugData($bugData) {
         $errors = [];
         

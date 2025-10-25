@@ -46,7 +46,6 @@ $user = $_SESSION['user'] ?? null;
             </div>
         <?php endif; ?>
         
-        <!-- User Management Section -->
         <div class="section">
             <h2>User Management</h2>
             
@@ -141,7 +140,6 @@ $user = $_SESSION['user'] ?? null;
             </table>
         </div>
         
-        <!-- Project Management Section -->
         <div class="section">
             <h2>Project Management</h2>
             

@@ -24,7 +24,7 @@ class BugTrackerRouter {
     public function route($action, $params = []) {
         $this->logRouteAccess($action, $params);
         
-        switch ($action) {
+        switch ($action) { // There hasssss to be a better way than this dumb switch statement, like an array loop or something
             case 'login':
                 return $this->handleLogin($params);
                 
@@ -109,14 +109,23 @@ class BugTrackerRouter {
         ];
     }
     
-    public function routeToAdmin() {
+    public function routeToAdmin($params = []) {
         if (!$this->controller->hasPermission('view_all_users')) {
             return $this->routeToUnauthorized();
         }
         
+        $data = $this->getAdminData();
+        
+        if (isset($params['message'])) {
+            $data['message'] = $params['message'];
+        }
+        if (isset($params['error'])) {
+            $data['error'] = $params['error'];
+        }
+        
         return [
             'view' => 'admin',
-            'data' => $this->getAdminData()
+            'data' => $data
         ];
     }
     
@@ -158,13 +167,13 @@ class BugTrackerRouter {
         return array_keys($this->routes);
     }
     
-    public function redirect($route, $params = []) {
+    public function redirect($route, $params = []) { //goated
         $url = $this->buildUrl($route, $params);
         header("Location: $url");
         exit;
     }
     
-    public function parseUrl($url) {
+    public function parseUrl($url) { //goat #2
         $parsed = parse_url($url);
         $path = $parsed['path'] ?? '';
         $query = $parsed['query'] ?? '';
@@ -183,6 +192,8 @@ class BugTrackerRouter {
     }
     
     private function initializeRoutes() {
+        // ass array defining route verbage and permissions
+        // This would have been a great to do as studying for test 1
         return [
             'login' => ['method' => 'POST', 'permission' => null],
             'logout' => ['method' => 'GET', 'permission' => null],

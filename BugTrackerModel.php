@@ -45,9 +45,8 @@ class BugTrackerModel extends Database {
     }
     
     public function updateBug($bugId, $bugData, $userId) {
-        // Check permissions
         if (!$this->bugs->canUserUpdateBug($userId, $bugId)) {
-            throw new Exception("Insufficient permissions to update bug");
+            throw new Exception("Insufficient permissions to update bug", 401);
         }
         
         $bugData['updatedBy'] = $userId;
@@ -55,9 +54,8 @@ class BugTrackerModel extends Database {
     }
     
     public function deleteBug($bugId, $userId) {
-        // Check permissions
         if (!$this->bugs->canUserUpdateBug($userId, $bugId)) {
-            throw new Exception("Insufficient permissions to delete bug");
+            throw new Exception("Insufficient permissions to delete bug", 401);
         }
         
         return $this->bugs->deleteBug($bugId);
@@ -104,7 +102,6 @@ class BugTrackerModel extends Database {
         if (in_array($userRole, ['Admin', 'Manager'])) {
             return $this->users->getAllProjects($userId);
         } else {
-            // Regular users can only see their assigned project
             $userProject = $this->users->getUserProject($userId);
             return $userProject ? [$userProject] : [];
         }
@@ -115,27 +112,24 @@ class BugTrackerModel extends Database {
     }
     
     public function assignUserToProject($userId, $projectId, $assignerId) {
-        // Check if assigner has permission
         if (!$this->users->isAdmin($assignerId) && !$this->users->isManager($assignerId)) {
-            throw new Exception("Insufficient permissions to assign users to projects");
+            throw new Exception("Insufficient permissions to assign users to projects", 401);
         }
         
         return $this->users->assignUserToProject($userId, $projectId);
     }
     
     public function removeUserFromProject($userId, $projectId, $removerId) {
-        // Check if remover has permission
         if (!$this->users->isAdmin($removerId) && !$this->users->isManager($removerId)) {
-            throw new Exception("Insufficient permissions to remove users from projects");
+            throw new Exception("Insufficient permissions to remove users from projects", 401);
         }
         
         return $this->users->removeUserFromProject($userId, $projectId);
     }
     
     public function assignBugToUser($bugId, $userId, $assignerId) {
-        // Check if assigner has permission
         if (!$this->bugs->canUserUpdateBug($assignerId, $bugId)) {
-            throw new Exception("Insufficient permissions to assign bug");
+            throw new Exception("Insufficient permissions to assign bug", 401);
         }
         
         return $this->bugs->assignBug($bugId, $userId);
@@ -165,7 +159,6 @@ class BugTrackerModel extends Database {
             }
         }
         
-        // Get statistics
         $dashboard['statistics'] = $this->getUserStatistics($userId);
         
         return $dashboard;
@@ -173,24 +166,19 @@ class BugTrackerModel extends Database {
     
     public function getSystemStatistics($adminId) {
         if (!$this->users->isAdmin($adminId)) {
-            throw new Exception("Only administrators can view system statistics");
+            throw new Exception("Only administrators can view system statistics", 401);
         }
         
         $stats = [];
         
-        // Total users
         $stats['totalUsers'] = count($this->users->getAllUsers($adminId));
         
-        // Total projects
         $stats['totalProjects'] = count($this->users->getAllProjects($adminId));
         
-        // Total bugs
         $stats['totalBugs'] = count($this->bugs->getAllBugs($adminId));
         
-        // Open bugs
         $stats['openBugs'] = count($this->bugs->getAllOpenBugs($adminId));
         
-        // Overdue bugs
         $overdueQuery = "SELECT COUNT(*) as count FROM bugs WHERE targetDate < CURDATE() AND statusId != 4";
         $overdueResult = $this->select($overdueQuery);
         $stats['overdueBugs'] = $overdueResult ? $overdueResult[0]['count'] : 0;
@@ -205,30 +193,26 @@ class BugTrackerModel extends Database {
             return false;
         }
         
-        // Check permissions
         if (!$this->bugs->canUserViewProjectBugs($userId, $bug['projectId'])) {
-            throw new Exception("Insufficient permissions to view bug details");
+            throw new Exception("Insufficient permissions to view bug details", 401);
         }
         
         return $bug;
     }
     
     public function getUserDetails($userId, $requesterId) {
-        // Check permissions
         if (!$this->users->isAdmin($requesterId) && $userId != $requesterId) {
-            throw new Exception("Insufficient permissions to view user details");
+            throw new Exception("Insufficient permissions to view user details", 401);
         }
         
         return $this->users->getUserById($userId);
     }
     
     public function getProjectDetails($projectId, $requesterId) {
-        // Check permissions
         if (!$this->users->canViewAllProjects($requesterId)) {
-            // Check if user is assigned to this project
             $userProject = $this->users->getUserProject($requesterId);
             if (!$userProject || $userProject['projectId'] != $projectId) {
-                throw new Exception("Insufficient permissions to view project details");
+                throw new Exception("Insufficient permissions to view project details", 401);
             }
         }
         
